@@ -206,6 +206,17 @@ test_group.test_map_call = function(g)
         [uuid_c] = {true},
     })
     --
+    -- request_timeout validation: must be <= timeout.
+    --
+    res, err, err_uuid = rs:map_call('get_uuid', {}, {timeout = 0.01, request_timeout = 0.02})
+    t.assert_equals(res, nil)
+    t.assert_not_equals(err, nil)
+    t.assert_equals(err.name, 'REQUEST_TIMEOUT_MISMATCH')
+    t.assert_equals(err.timeout, 0.01)
+    t.assert_equals(err.request_timeout, 0.02)
+    t.assert_str_contains(err.message, 'request_timeout')
+    t.assert_str_contains(err.message, 'must be <=')
+    --
     -- Cleanup.
     --
     vtest.cluster_exec_each(g, function()
